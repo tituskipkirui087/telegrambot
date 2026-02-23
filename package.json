@@ -1,0 +1,17 @@
+{
+  "name": "telegram-crypto-bot",
+  "version": "1.0.0",
+  "description": "Telegram bot with welcome message, product menu and crypto payments",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "dev": "node bot.js"
+  },
+  "keywords": ["telegram", "bot", "crypto", "payment"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "telegraf": "^4.16.3",
+    "dotenv": "^16.4.5"
+  }
+}
