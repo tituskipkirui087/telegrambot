@@ -657,7 +657,6 @@ bot.catch((err, ctx) => {
 // ============================================
 
 const http = require('http');
-const { Telegram, Markup } = require('telegraf');
 
 const app = http.createServer((req, res) => {
   // Handle webhook callbacks from Telegram
@@ -686,11 +685,23 @@ const app = http.createServer((req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-console.log('🤖 Starting Telegram Crypto Payment Bot (Webhook mode)...');
-console.log('📝 Auto-post generating 1 million+ unique messages with slang');
-
-app.listen(PORT, () => {
-  console.log(`✅ Bot is running on port ${PORT}!`);
+// Start webhook server first, then launch bot
+app.listen(PORT, async () => {
+  console.log(`✅ Webhook server running on port ${PORT}!`);
+  
+  // Set the webhook URL with Telegram
+  const webhookUrl = process.env.WEBHOOK_URL;
+  if (webhookUrl) {
+    try {
+      await bot.telegram.setWebhook(webhookUrl);
+      console.log(`🔗 Webhook set to: ${webhookUrl}`);
+    } catch (err) {
+      console.error('Failed to set webhook:', err);
+    }
+  }
+  
+  console.log('🤖 Starting Telegram Crypto Payment Bot...');
+  console.log('📝 Auto-post generating 1 million+ unique messages with slang');
   console.log('📱 Send /start to your bot to test it.');
   startAutoPost();
 });
