@@ -1,9 +1,17 @@
 services:
   - type: web
-    name: telegram-bot
+    name: telegrambot
     env: node
     buildCommand: npm install
     startCommand: node bot.js
     envVars:
       - key: NODE_ENV
         value: production
+      - key: TELEGRAM_BOT_TOKEN
+        value: 8597861593:AAHpE86zsFKizhReICxK_Z8Gf03YB6y_hIQ
+      - key: CHANNEL_USERNAME
+        value: ryancardsempire
+      - key: ADMIN_CHAT_ID
+        value: "7973653220"
+      - key: WEBHOOK_URL
+        value: https://telegrambot-l298.onrender.com
