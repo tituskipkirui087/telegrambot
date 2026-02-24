@@ -696,8 +696,10 @@ app.listen(PORT, async () => {
       await bot.telegram.setWebhook(webhookUrl);
       console.log(`🔗 Webhook set to: ${webhookUrl}`);
     } catch (err) {
-      console.error('Failed to set webhook:', err);
+      console.error('Failed to set webhook:', err.message);
     }
+  } else {
+    console.log('⚠️ WEBHOOK_URL not set - using long polling');
   }
   
   console.log('🤖 Starting Telegram Crypto Payment Bot...');
