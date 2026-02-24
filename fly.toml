@@ -1,0 +1,30 @@
+app = "telegram-crypto-bot"
+kill_signal = "SIGINT"
+kill_timeout = 5
+
+[build]
+  builder = "heroku/buildpacks:20"
+
+[env]
+  NODE_ENV = "production"
+
+[processes]
+  app = "node bot.js"
+
+[[services]]
+  http_checks = []
+  internal_port = 8080
+  processes = ["app"]
+  protocol = "tcp"
+
+  [services.healthcheck]
+    grace_period = "5s"
+    interval = "15s"
+    method = "none"
+    restart_limit = 0
+    timeout = "2s"
+
+  [[services.ports]]
+    force_https = false
+    handlers = []
+    port = 8080
