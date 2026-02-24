@@ -659,6 +659,13 @@ bot.catch((err, ctx) => {
 const http = require('http');
 
 const app = http.createServer((req, res) => {
+  // Health check endpoint
+  if (req.method === 'GET' && req.url === '/') {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('🤖 Telegram Bot is running!');
+    return;
+  }
+  
   // Handle webhook callbacks from Telegram
   if (req.method === 'POST') {
     let body = '';
@@ -669,14 +676,11 @@ const app = http.createServer((req, res) => {
       try {
         await bot.handleUpdate(JSON.parse(body));
       } catch (err) {
-        console.error('Error handling update:', err);
+        console.error('Error handling update:', err.message);
       }
       res.writeHead(200);
       res.end();
     });
-  } else if (req.method === 'GET') {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('🤖 Telegram Crypto Payment Bot is running!');
   } else {
     res.writeHead(404);
     res.end();
@@ -686,25 +690,22 @@ const app = http.createServer((req, res) => {
 const PORT = process.env.PORT || 3000;
 
 // Start webhook server first, then launch bot
-app.listen(PORT, async () => {
-  console.log(`✅ Webhook server running on port ${PORT}!`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Server running on port ${PORT}!`);
   
   // Set the webhook URL with Telegram
   const webhookUrl = process.env.WEBHOOK_URL;
   if (webhookUrl) {
-    try {
-      await bot.telegram.setWebhook(webhookUrl);
-      console.log(`🔗 Webhook set to: ${webhookUrl}`);
-    } catch (err) {
-      console.error('Failed to set webhook:', err.message);
-    }
+    bot.telegram.setWebhook(webhookUrl)
+      .then(() => console.log(`🔗 Webhook set to: ${webhookUrl}`))
+      .catch(err => console.error('Failed to set webhook:', err.message));
   } else {
     console.log('⚠️ WEBHOOK_URL not set - using long polling');
+    bot.launch();
   }
   
   console.log('🤖 Starting Telegram Crypto Payment Bot...');
-  console.log('📝 Auto-post generating 1 million+ unique messages with slang');
-  console.log('📱 Send /start to your bot to test it.');
+  console.log('📝 Auto-post generating messages');
   startAutoPost();
 });
 
