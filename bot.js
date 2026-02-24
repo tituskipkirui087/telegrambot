@@ -653,21 +653,59 @@ bot.catch((err, ctx) => {
 });
 
 // ============================================
-// START THE BOT
+// START THE BOT (Webhook mode for cloud deployment)
 // ============================================
 
-console.log('🤖 Starting Telegram Crypto Payment Bot...');
+const http = require('http');
+const { Telegram, Markup } = require('telegraf');
+
+const app = http.createServer((req, res) => {
+  // Handle webhook callbacks from Telegram
+  if (req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+    req.on('end', async () => {
+      try {
+        await bot.handleUpdate(JSON.parse(body));
+      } catch (err) {
+        console.error('Error handling update:', err);
+      }
+      res.writeHead(200);
+      res.end();
+    });
+  } else if (req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('🤖 Telegram Crypto Payment Bot is running!');
+  } else {
+    res.writeHead(404);
+    res.end();
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+
+console.log('🤖 Starting Telegram Crypto Payment Bot (Webhook mode)...');
 console.log('📝 Auto-post generating 1 million+ unique messages with slang');
 
-bot.launch()
-  .then(() => {
-    console.log('✅ Bot is running successfully!');
-    console.log('📱 Send /start to your bot to test it.');
-    startAutoPost();
-  })
-  .catch((err) => {
-    console.error('Failed to launch bot:', err);
-  });
+app.listen(PORT, () => {
+  console.log(`✅ Bot is running on port ${PORT}!`);
+  console.log('📱 Send /start to your bot to test it.');
+  startAutoPost();
+});
+
+process.once('SIGINT', () => {
+  console.log('\n🛑 Stopping bot...');
+  app.close();
+  stopAutoPost();
+});
+
+process.once('SIGTERM', () => {
+  console.log('\n🛑 Stopping bot...');
+  app.close();
+  stopAutoPost();
+});
 
 process.once('SIGINT', () => {
   console.log('\n🛑 Stopping bot...');
