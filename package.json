@@ -12,7 +12,6 @@
   "license": "ISC",
   "dependencies": {
     "telegraf": "^4.16.3",
-    "dotenv": "^16.4.5",
-    "gramjs": "^1.8.2"
+    "dotenv": "^16.4.5"
   }
 }
