@@ -696,36 +696,16 @@ const app = http.createServer((req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-// Start webhook server first, then launch bot
+// Simple and reliable: Use long polling for all environments
+// This is more reliable than webhooks for most cases
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Server running on port ${PORT}!`);
   
-  // Set the webhook URL with Telegram
-  const webhookUrl = process.env.WEBHOOK_URL;
-  console.log('🔍 Checking webhook URL:', webhookUrl ? 'Set' : 'Not set');
+  // Launch bot with long polling
+  bot.launch()
+    .then(() => console.log('🤖 Bot started with long polling'))
+    .catch(err => console.error('Launch error:', err.message));
   
-  if (webhookUrl) {
-    // First delete any existing webhook to avoid conflicts
-    bot.telegram.deleteWebhook()
-      .then(() => {
-        console.log('🗑️ Deleted old webhook');
-        return bot.telegram.setWebhook(webhookUrl);
-      })
-      .then(() => {
-        console.log(`🔗 Webhook set to: ${webhookUrl}`);
-      })
-      .catch(err => {
-        console.error('❌ Failed to set webhook:', err.message);
-        console.log('🔄 Falling back to long polling...');
-        bot.launch();
-      });
-  } else {
-    console.log('⚠️ WEBHOOK_URL not set - using long polling');
-    bot.launch();
-  }
-  
-  console.log('🤖 Starting Telegram Crypto Payment Bot...');
-  console.log('📝 Auto-post generating messages');
   startAutoPost();
 });
 
