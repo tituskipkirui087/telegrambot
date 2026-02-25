@@ -239,11 +239,13 @@ function getProductMenu() {
 
 bot.start(async (ctx) => {
   try {
+    console.log('🎯 /start command received from:', ctx.from.first_name, ctx.from.id);
     const userName = ctx.from.first_name || 'Friend';
     await ctx.replyWithMarkdown(
       `👋 Hello ${userName}! ${welcomeMessage}`,
       getProductMenu()
     );
+    console.log('✅ Welcome message sent');
   } catch (error) {
     console.error('Error in start command:', error);
   }
@@ -668,20 +670,25 @@ const app = http.createServer((req, res) => {
   
   // Handle webhook callbacks from Telegram - check for /webhook path
   if (req.method === 'POST' && req.url === '/webhook') {
+    console.log('📥 Received webhook from Telegram');
     let body = '';
     req.on('data', chunk => {
       body += chunk.toString();
     });
     req.on('end', async () => {
       try {
-        await bot.handleUpdate(JSON.parse(body));
+        const update = JSON.parse(body);
+        console.log('📨 Update received:', update.message ? update.message.text : 'non-text');
+        await bot.handleUpdate(update);
+        console.log('✅ Update handled successfully');
       } catch (err) {
-        console.error('Error handling update:', err.message);
+        console.error('❌ Error handling update:', err.message);
       }
       res.writeHead(200);
       res.end();
     });
   } else {
+    console.log('⚠️ Unknown request:', req.method, req.url);
     res.writeHead(404);
     res.end();
   }
@@ -695,15 +702,21 @@ app.listen(PORT, '0.0.0.0', () => {
   
   // Set the webhook URL with Telegram
   const webhookUrl = process.env.WEBHOOK_URL;
+  console.log('🔍 Checking webhook URL:', webhookUrl ? 'Set' : 'Not set');
+  
   if (webhookUrl) {
     // First delete any existing webhook to avoid conflicts
     bot.telegram.deleteWebhook()
       .then(() => {
+        console.log('🗑️ Deleted old webhook');
         return bot.telegram.setWebhook(webhookUrl);
       })
-      .then(() => console.log(`🔗 Webhook set to: ${webhookUrl}`))
+      .then(() => {
+        console.log(`🔗 Webhook set to: ${webhookUrl}`);
+      })
       .catch(err => {
-        console.error('Failed to set webhook, falling back to long polling:', err.message);
+        console.error('❌ Failed to set webhook:', err.message);
+        console.log('🔄 Falling back to long polling...');
         bot.launch();
       });
   } else {
