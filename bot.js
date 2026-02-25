@@ -696,9 +696,16 @@ app.listen(PORT, '0.0.0.0', () => {
   // Set the webhook URL with Telegram
   const webhookUrl = process.env.WEBHOOK_URL;
   if (webhookUrl) {
-    bot.telegram.setWebhook(webhookUrl)
+    // First delete any existing webhook to avoid conflicts
+    bot.telegram.deleteWebhook()
+      .then(() => {
+        return bot.telegram.setWebhook(webhookUrl);
+      })
       .then(() => console.log(`🔗 Webhook set to: ${webhookUrl}`))
-      .catch(err => console.error('Failed to set webhook:', err.message));
+      .catch(err => {
+        console.error('Failed to set webhook, falling back to long polling:', err.message);
+        bot.launch();
+      });
   } else {
     console.log('⚠️ WEBHOOK_URL not set - using long polling');
     bot.launch();
