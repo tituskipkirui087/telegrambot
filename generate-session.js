@@ -12,7 +12,9 @@
 require('dotenv').config();
 const { TelegramClient } = require('telegram');
 const { StringSession } = require('telegram/sessions');
-const input = require('input');
+
+// Get code from command line argument
+const codeFromArg = process.argv[2];
 
 async function generateSession() {
   const apiId = parseInt(process.env.API_ID);
@@ -38,8 +40,8 @@ async function generateSession() {
 
   await client.start({
     phoneNumber: async () => phone,
-    password: async () => await input.text('Enter 2FA password (if any): '),
-    phoneCode: async () => await input.text('Enter the code sent to your Telegram: '),
+    password: async () => '',
+    phoneCode: async () => codeFromArg || await require('input').text('Enter the code sent to your Telegram: '),
     onError: (err) => console.error('Error:', err),
   });
 
