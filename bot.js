@@ -762,6 +762,7 @@ async function startUserbot() {
   const phone = process.env.PHONE;
   const sessionString = process.env.SESSION_STRING;
   const sourceChannel = process.env.SOURCE_CHANNEL;
+  const targetUsername = process.env.TARGET_USERNAME || 'ryancardsempire';
   
   if (!apiId || !apiHash || !phone || !sourceChannel) {
     console.log('⚠️ Userbot credentials not configured. Skipping...');
@@ -806,6 +807,21 @@ async function startUserbot() {
       console.log('📥 New message from source channel, mirroring...');
       
       try {
+        // Get the message text and replace source admin username with target username
+        let messageText = message.message || '';
+        
+        // If there's text, replace any username mentions
+        if (messageText) {
+          // Get channel info to find admin username
+          const channelInfo = await client.getEntity(sourceChannel);
+          const sourceUsername = channelInfo.username;
+          
+          // Replace @sourcechannel with @targetusername
+          if (sourceUsername) {
+            messageText = messageText.replace(new RegExp(`@${sourceUsername}`, 'gi'), `@${targetUsername}`);
+          }
+        }
+        
         // Forward to your channel
         await client.invoke({
           _: 'messages.forwardMessages',
@@ -826,5 +842,5 @@ async function startUserbot() {
   }
 }
 
-// Uncomment to enable userbot:
-// startUserbot();
+// Enable userbot:
+startUserbot();
