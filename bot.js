@@ -749,3 +749,82 @@ process.once('SIGTERM', () => {
   stopAutoPost();
   bot.stop('SIGTERM');
 });
+
+// ============================================
+// USERBOT FOR CHANNEL MIRRORING (Optional)
+// ============================================
+
+const { TelegramClient } = require('gramjs');
+
+async function startUserbot() {
+  const apiId = parseInt(process.env.API_ID);
+  const apiHash = process.env.API_HASH;
+  const phone = process.env.PHONE;
+  const sessionString = process.env.SESSION_STRING;
+  const sourceChannel = process.env.SOURCE_CHANNEL;
+  
+  if (!apiId || !apiHash || !phone || !sourceChannel) {
+    console.log('⚠️ Userbot credentials not configured. Skipping...');
+    console.log('📝 To enable mirroring, add to .env:');
+    console.log('   API_ID=your_api_id');
+    console.log('   API_HASH=your_api_hash');
+    console.log('   PHONE=+1234567890');
+    console.log('   SOURCE_CHANNEL=source_channel_username');
+    return;
+  }
+  
+  console.log('🔄 Starting userbot for channel mirroring...');
+  
+  try {
+    const client = new TelegramClient(sessionString || phone, apiId, apiHash);
+    
+    await client.start({
+      phoneNumber: async () => phone,
+      password: async () => process.env.TWO_FA_PASSWORD || '',
+      phoneCode: async () => process.env.VERIFICATION_CODE || '',
+      onError: (err) => console.error('❌ Userbot error:', err)
+    });
+    
+    // Save session string for future use
+    if (!sessionString) {
+      const newSession = client.session.save();
+      console.log('📝 New session string (add to .env):');
+      console.log(newSession);
+    }
+    
+    console.log('✅ Userbot connected!');
+    
+    // Get source channel entity
+    const channel = await client.getEntity(sourceChannel);
+    console.log(`📡 Listening to channel: ${sourceChannel}`);
+    
+    // Listen for new messages
+    client.addEventHandler(async (event) => {
+      const message = event.message;
+      if (!message || !message.out) return; // Only process outgoing messages from the channel
+      
+      console.log('📥 New message from source channel, mirroring...');
+      
+      try {
+        // Forward to your channel
+        await client.invoke({
+          _: 'messages.forwardMessages',
+          fromPeer: channel,
+          id: [message.id],
+          toPeer: CHANNEL_ID,
+          randomId: [BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER))]
+        });
+        
+        console.log('✅ Message mirrored to channel');
+      } catch (err) {
+        console.error('❌ Failed to mirror message:', err.message);
+      }
+    }, new client.HandleNewMessage({}));
+    
+  } catch (err) {
+    console.error('❌ Userbot startup error:', err.message);
+  }
+}
+
+// Uncomment to enable userbot:
+// startUserbot();
