@@ -666,8 +666,8 @@ const app = http.createServer((req, res) => {
     return;
   }
   
-  // Handle webhook callbacks from Telegram
-  if (req.method === 'POST') {
+  // Handle webhook callbacks from Telegram - check for /webhook path
+  if (req.method === 'POST' && req.url === '/webhook') {
     let body = '';
     req.on('data', chunk => {
       body += chunk.toString();

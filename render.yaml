@@ -14,4 +14,4 @@ services:
       - key: ADMIN_CHAT_ID
         value: "7973653220"
       - key: WEBHOOK_URL
-        value: https://telegrambot-l298.onrender.com
+        value: https://telegrambot-l298.onrender.com/webhook
