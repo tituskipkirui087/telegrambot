@@ -298,6 +298,14 @@ bot.command('help', async (ctx) => {
 bot.command('copy', async (ctx) => {
   try {
     await ctx.reply(CRYPTO_WALLET);
+    await ctx.reply(
+      `⚠️ *IMPORTANT NOTICE*\n\n` +
+      `After making payment, please contact @ryancardsempire with:\n` +
+      `• Screenshot of your payment\n` +
+      `• The product you purchased\n\n` +
+      `Our team will deliver your product to your DM once payment is confirmed!`,
+      { parse_mode: 'Markdown' }
+    );
   } catch (error) {
     console.error('Error in copy command:', error);
   }
@@ -315,7 +323,8 @@ bot.command('paynow', async (ctx) => {
       `Send payment in BTC to:\n\n` +
       `${CRYPTO_WALLET}\n\n` +
       `Tap and HOLD the address above to select & copy!\n\n` +
-      `Or click the button below to copy.`,
+      `Or click the button below to copy.\n\n` +
+      `⚠️ *After payment, contact @ryancardsempire with screenshot!*`,
       {
         parse_mode: 'Markdown',
         reply_markup: keyboard
@@ -496,6 +505,14 @@ bot.action('copy_address', async (ctx) => {
   try {
     await ctx.answerCbQuery('📋 Address copied!');
     await ctx.reply(CRYPTO_WALLET);
+    await ctx.reply(
+      `⚠️ *IMPORTANT NOTICE*\n\n` +
+      `After making payment, please contact @ryancardsempire with:\n` +
+      `• Screenshot of your payment\n` +
+      `• The product you purchased\n\n` +
+      `Our team will deliver your product to your DM once payment is confirmed!`,
+      { parse_mode: 'Markdown' }
+    );
   } catch (error) {
     console.error('Error in copy_address:', error.message);
   }
