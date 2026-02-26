@@ -129,7 +129,7 @@ function startSelfPing() {
   
   selfPingInterval = setInterval(async () => {
     try {
-      const webhookUrl = process.env.WEBHOOK_URL || `https://telegrambot-l298.onrender.com`;
+      const webhookUrl = process.env.WEBHOOK_URL || 'https://telegrambot-l298.onrender.com';
       
       // Use https module for compatibility with older Node.js versions
       const urlObj = new URL(webhookUrl);
@@ -259,7 +259,7 @@ const products = [
 // ============================================
 const welcomeMessage = `
 💎 *ELITE VAULT SERVICES* 💎
-━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  *Welcome!* We're your trusted source for premium cards.
 
@@ -279,7 +279,7 @@ const welcomeMessage = `
  • 24/7 support
  • Secure transactions only 
 
- ━━━━━━━━━━━━━━━━━━━━━━
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  💡 Use /menu to browse products
  💡 Use /paynow to get payment address
@@ -536,7 +536,7 @@ products.forEach(product => {
         `*${product.name}*\n\n` +
         `💎 Value of the card: ${product.value}\n\n` +
         `💵 Price: ${product.priceUsd} USD\n\n` +
-        `━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
         `📥 PAYMENT INFO:\n\n` +
         `💰 Send exactly ${product.priceUsd} USD in BTC to:\n\n` +
         `${CRYPTO_WALLET}\n\n` +
@@ -783,39 +783,44 @@ const app = http.createServer((req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-// Simple and reliable: Use long polling for all environments
-// This is more reliable than webhooks for most cases
-app.listen(PORT, '0.0.0.0', () => {
+// Use webhooks for reliable deployment on cloud platforms
+app.listen(PORT, '0.0.0.0', async () => {
   console.log(`✅ Server running on port ${PORT}!`);
   
-  // Launch bot with long polling
-  bot.launch()
-    .then(() => console.log('🤖 Bot started with long polling'))
-    .catch(err => console.error('Launch error:', err.message));
+  const webhookUrl = process.env.WEBHOOK_URL || 'https://telegrambot-l298.onrender.com/webhook';
   
-  // Check if we missed any posts while sleeping\n  const timeSinceLastPostOnWake = Date.now() - lastAutoPostTime;\n  if (timeSinceLastPostOnWake >= AUTO_POST_INTERVAL_MS) {\n    console.log("⏰ Bot just woke up from sleep - catching up on missed posts...");\n    postToChannel(getNextMessage());\n    lastAutoPostTime = Date.now();\n  }\n\n  startAutoPost();
+  try {
+    // Set up webhook with Telegram
+    await bot.telegram.setWebhook(webhookUrl);
+    console.log(`✅ Webhook set to: ${webhookUrl}`);
+  } catch (err) {
+    console.error('❌ Error setting webhook:', err.message);
+  }
+  
+  // Check if we missed any posts while sleeping
+  const timeSinceLastPostOnWake = Date.now() - lastAutoPostTime;
+  if (timeSinceLastPostOnWake >= AUTO_POST_INTERVAL_MS) {
+    console.log("⏰ Bot just woke up from sleep - catching up on missed posts...");
+    postToChannel(getNextMessage());
+    lastAutoPostTime = Date.now();
+  }
+
+  // Start auto-post
+  startAutoPost();
+  
+  console.log('🤖 Bot is ready with webhooks!');
 });
 
 process.once('SIGINT', () => {
   console.log('\n🛑 Stopping bot...');
   app.close();
-  stopAutoPost();
-});
-
-process.once('SIGTERM', () => {
-  console.log('\n🛑 Stopping bot...');
-  app.close();
-  stopAutoPost();
-});
-
-process.once('SIGINT', () => {
-  console.log('\n🛑 Stopping bot...');
   stopAutoPost();
   bot.stop('SIGINT');
 });
 
 process.once('SIGTERM', () => {
   console.log('\n🛑 Stopping bot...');
+  app.close();
   stopAutoPost();
   bot.stop('SIGTERM');
 });
