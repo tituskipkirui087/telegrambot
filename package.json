@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "telegraf": "^4.16.3",
+    "telegram": "^2.21.5",
     "dotenv": "^16.4.5"
   }
 }

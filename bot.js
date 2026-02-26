@@ -6,7 +6,7 @@ const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 // ============================================
 // CHANNEL CONFIGURATION
 // ============================================
-const CHANNEL_USERNAME = process.env.CHANNEL_USERNAME || 'ryancardsempire';
+const CHANNEL_USERNAME = process.env.CHANNEL_USERNAME || 'Ryancardsplug';
 const CHANNEL_ID = '@' + CHANNEL_USERNAME;
 
 // ============================================
@@ -18,7 +18,7 @@ const CHANNEL_ID = '@' + CHANNEL_USERNAME;
 const AUTO_POST_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
 const SELF_PING_INTERVAL_MS = 5 * 60 * 1000; // Ping every 5 minutes to stay awake on Render
 let lastAutoPostTime = Date.now(); // Track last post time
-const BOT_USERNAME = 'ryancardsempirebot';
+const BOT_USERNAME = 'Ryancardsplugbot';
 const botLink = `https://t.me/${BOT_USERNAME}`;
 
 // Slang words for generation - creates millions of unique combinations
@@ -369,7 +369,7 @@ bot.command('copy', async (ctx) => {
     await ctx.reply(CRYPTO_WALLET);
     await ctx.reply(
       `⚠️ *IMPORTANT NOTICE*\n\n` +
-      `After making payment, please contact @ryancardsempire with:\n` +
+      `After making payment, please contact @Ryancardsplug with:\n` +
       `• Screenshot of your payment\n` +
       `• The product you purchased\n\n` +
       `Our team will deliver your product to your DM once payment is confirmed!`,
@@ -393,7 +393,7 @@ bot.command('paynow', async (ctx) => {
       `${CRYPTO_WALLET}\n\n` +
       `Tap and HOLD the address above to select & copy!\n\n` +
       `Or click the button below to copy.\n\n` +
-      `⚠️ *After payment, contact @ryancardsempire with screenshot!*`,
+      `⚠️ *After payment, contact @Ryancardsplug with screenshot!*`,
       {
         parse_mode: 'Markdown',
         reply_markup: keyboard
@@ -576,7 +576,7 @@ bot.action('copy_address', async (ctx) => {
     await ctx.reply(CRYPTO_WALLET);
     await ctx.reply(
       `⚠️ *IMPORTANT NOTICE*\n\n` +
-      `After making payment, please contact @ryancardsempire with:\n` +
+      `After making payment, please contact @Ryancardsplug with:\n` +
       `• Screenshot of your payment\n` +
       `• The product you purchased\n\n` +
       `Our team will deliver your product to your DM once payment is confirmed!`,
@@ -632,7 +632,7 @@ bot.action('contact_support', async (ctx) => {
 
  We're here to help! Reach out to us:
 
- 💬 Telegram: @ryancardsempire
+ 💬 Telegram: @Ryancardsplug
 
  _Response time: Minutes_
     `);
@@ -835,7 +835,7 @@ async function startUserbot() {
   const phone = process.env.PHONE;
   const sessionString = process.env.SESSION_STRING;
   const sourceChannel = process.env.SOURCE_CHANNEL;
-  const targetUsername = process.env.TARGET_USERNAME || 'ryancardsempire';
+  const targetUsername = process.env.TARGET_USERNAME || 'Ryancardsplug';
   
   if (!apiId || !apiHash || !phone || !sourceChannel) {
     console.log('⚠️ Userbot credentials not configured. Skipping...');
