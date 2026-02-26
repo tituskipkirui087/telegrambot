@@ -12,6 +12,12 @@ const CHANNEL_ID = '@' + CHANNEL_USERNAME;
 // ============================================
 // AUTO-POST MESSAGES - Unique generator (1 million+ variations)
 // ============================================
+// IMPORTANT: Render free tier sleeps after 15 min, so we use timestamp-based tracking
+// and self-ping to keep the instance alive
+
+const AUTO_POST_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
+const SELF_PING_INTERVAL_MS = 5 * 60 * 1000; // Ping every 5 minutes to stay awake on Render
+let lastAutoPostTime = Date.now(); // Track last post time
 const BOT_USERNAME = 'ryancardsempirebot';
 const botLink = `https://t.me/${BOT_USERNAME}`;
 
@@ -85,17 +91,23 @@ function getNextMessage() {
 }
 
 let autoPostInterval;
+let selfPingInterval;
 
 function startAutoPost() {
   // Post immediately on startup with a unique message
   postToChannel(getNextMessage());
+  lastAutoPostTime = Date.now();
   
   // Then post every 1 hour (1 * 60 * 60 * 1000 ms)
   autoPostInterval = setInterval(() => {
     postToChannel(getNextMessage());
-  }, 1 * 60 * 60 * 1000);
+    lastAutoPostTime = Date.now();
+  }, AUTO_POST_INTERVAL_MS);
   
   console.log('✅ Auto-post started: posting unique messages every 1 hour');
+  
+  // Start self-ping to keep instance awake on Render free tier
+  startSelfPing();
 }
 
 function stopAutoPost() {
@@ -103,6 +115,63 @@ function stopAutoPost() {
     clearInterval(autoPostInterval);
     console.log('⏹️ Auto-post stopped');
   }
+  if (selfPingInterval) {
+    clearInterval(selfPingInterval);
+    console.log('⏹️ Self-ping stopped');
+  }
+}
+
+// Self-ping function to keep Render instance awake
+function startSelfPing() {
+  if (selfPingInterval) {
+    clearInterval(selfPingInterval);
+  }
+  
+  selfPingInterval = setInterval(async () => {
+    try {
+      const webhookUrl = process.env.WEBHOOK_URL || `https://telegrambot-l298.onrender.com`;
+      
+      // Use https module for compatibility with older Node.js versions
+      const urlObj = new URL(webhookUrl);
+      const protocol = urlObj.protocol === 'https:' ? https : http;
+      
+      const options = {
+        hostname: urlObj.hostname,
+        port: urlObj.port || (urlObj.protocol === 'https:' ? 443 : 80),
+        path: "/",
+        method: 'GET',
+        timeout: 10000
+      };
+      
+      const req = protocol.request(options, (res) => {
+        // Check if we need to post (in case we woke up from sleep)
+        const timeSinceLastPost = Date.now() - lastAutoPostTime;
+        if (timeSinceLastPost >= AUTO_POST_INTERVAL_MS) {
+          console.log('⏰ Missed post detected, catching up...');
+          postToChannel(getNextMessage()).then(() => {
+            lastAutoPostTime = Date.now();
+          });
+        }
+        
+        console.log(`🏓 Self-ping successful at ${new Date().toISOString()} (status: ${res.statusCode})`);
+      });
+      
+      req.on('error', (e) => {
+        console.error('❌ Self-ping error:', e.message);
+      });
+      
+      req.on('timeout', () => {
+        req.destroy();
+        console.error('❌ Self-ping timeout');
+      });
+      
+      req.end();
+    } catch (error) {
+      console.error('❌ Self-ping failed:', error.message);
+    }
+  }, SELF_PING_INTERVAL_MS);
+  
+  console.log('🏓 Self-ping started to keep instance awake (every 5 minutes)');
 }
 
 // ============================================
@@ -676,6 +745,7 @@ bot.catch((err, ctx) => {
 // ============================================
 
 const http = require('http');
+const https = require('https');
 
 const app = http.createServer((req, res) => {
   // Health check endpoint
@@ -723,7 +793,7 @@ app.listen(PORT, '0.0.0.0', () => {
     .then(() => console.log('🤖 Bot started with long polling'))
     .catch(err => console.error('Launch error:', err.message));
   
-  startAutoPost();
+  // Check if we missed any posts while sleeping\n  const timeSinceLastPostOnWake = Date.now() - lastAutoPostTime;\n  if (timeSinceLastPostOnWake >= AUTO_POST_INTERVAL_MS) {\n    console.log("⏰ Bot just woke up from sleep - catching up on missed posts...");\n    postToChannel(getNextMessage());\n    lastAutoPostTime = Date.now();\n  }\n\n  startAutoPost();
 });
 
 process.once('SIGINT', () => {
